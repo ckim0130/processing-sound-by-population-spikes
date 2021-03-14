@@ -1,0 +1,37 @@
+
+
+function out = ws_auditory
+% order = E,I,x,y
+vs =  [0.1; 0.1; 0; 0.1; 0.9; 1; 0.8; 1];
+N_E = 2;
+N_I = 2;
+
+E = vs(1:N_E);
+I = vs(N_E+1:N_E+N_I);
+x = vs(N_E+N_E+1: 2*N_E+N_I);
+y = vs(2*N_E+N_I+1:end);
+J_ee = 6; %synaptic efficacy for exc to exc 
+J_ei = -4; %synaptic efficacy for inh to exc 
+J_ie = 0.5; %synaptic efficacy for exc to inh 
+J_ii = -0.5; %synaptic efficacy for inh to inh 
+U = 0.5;
+e = -10;
+tau_ref = 0.003;
+tau_rec = 0.8;
+tau = 0.001;
+
+j = 1:N_E; % number of neurons
+N = length(j)
+sum_E= J_ee/N_E * sum(U.*x(j).*E(j)) + J_ei/N_E * sum(U.*y(j).*I(j)+e); % no s?
+out_f_E = max(0,sum_E);
+sum_I= J_ie/N_E * sum(E(j)) + J_ii/N_E * sum(U.*y(j).*I(j)+e);
+out_f_I = max(0,sum_I);
+
+dEdt = (-E + (1-tau_ref*E)*out_f_E)/tau;
+dIdt = (-I + (1-tau_ref*I)*out_f_I)/tau;
+
+dxdt = (1-x)/tau_rec - U*x.*E;
+dydt = (1-y)/tau_rec - U*y.*I;
+
+out = [transpose(j),dEdt, dIdt, dxdt, dydt];
+end
